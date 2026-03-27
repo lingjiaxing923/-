@@ -1,0 +1,159 @@
+name: Build Android Complete Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - release
+          - debug
+
+env:
+  JAVA_VERSION: '17'
+  FLUTTER_VERSION: '3.19.0'
+
+jobs:
+  build-android:
+    name: Build Android APK & Bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: ☕ Setup Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: 🦋 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+          cache-key: flutter-${{ env.FLUTTER_VERSION }}-${{ runner.os }}-${{ hashFiles('**/pubspec.lock') }}
+
+      - name: 🔧 Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 📦 Install Flutter dependencies
+        working-directory: ./classquest/frontend
+        run: |
+          flutter doctor -v
+          flutter pub get
+          flutter pub upgrade --major-versions
+
+      - name: 🧪 Run Flutter tests
+        working-directory: ./classquest/frontend
+        run: flutter test
+        continue-on-error: true
+
+      - name: 🔍 Analyze code
+        working-directory: ./classquest/frontend
+        run: flutter analyze
+        continue-on-error: true
+
+      - name: 🔨 Build Android APK (${{ github.event.inputs.build_type || 'release' }})
+        working-directory: ./classquest/frontend
+        run: |
+          if [ "${{ github.event.inputs.build_type }}" == "debug" ]; then
+            flutter build apk --debug
+          else
+            flutter build apk --release --target-platform android-arm64
+          fi
+
+      - name: 📦 Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk-${{ github.event.inputs.build_type || 'release' }}
+          path: classquest/frontend/build/app/outputs/flutter-apk/*.apk
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: 🔨 Build Android App Bundle (${{ github.event.inputs.build_type || 'release' }})
+        working-directory: ./classquest/frontend
+        run: |
+          if [ "${{ github.event.inputs.build_type }}" == "debug" ]; then
+            flutter build appbundle --debug
+          else
+            flutter build appbundle --release
+          fi
+
+      - name: 📦 Upload App Bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-appbundle-${{ github.event.inputs.build_type || 'release' }}
+          path: classquest/frontend/build/app/outputs/bundle/**/*.aab
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: 📊 Generate build info
+        id: build-info
+        working-directory: ./classquest/frontend
+        run: |
+          echo "BUILD_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+          echo "FLUTTER_VERSION=$(flutter --version | head -n1)" >> $GITHUB_OUTPUT
+          echo "APK_SIZE=$(du -h build/app/outputs/flutter-apk/*.apk | cut -f1)" >> $GITHUB_OUTPUT
+
+      - name: 📝 Create Release Summary
+        run: |
+          echo "## 🚀 Android Build Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Build Information" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build Time:** ${{ steps.build-info.outputs.BUILD_TIME }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Flutter Version:** ${{ steps.build-info.outputs.FLUTTER_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build Type:** ${{ github.event.inputs.build_type || 'release' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **APK Size:** ${{ steps.build-info.outputs.APK_SIZE }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📥 Downloads" >> $GITHUB_STEP_SUMMARY
+          echo "Artifacts are available in the Actions tab for 90 days." >> $GITHUB_STEP_SUMMARY
+
+  build-debug:
+    name: Build Debug APK (Quick)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: ☕ Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: 🦋 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: 📦 Install dependencies
+        working-directory: ./classquest/frontend
+        run: flutter pub get
+
+      - name: 🔨 Build Debug APK
+        working-directory: ./classquest/frontend
+        run: flutter build apk --debug
+
+      - name: 📦 Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-apk
+          path: classquest/frontend/build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 7

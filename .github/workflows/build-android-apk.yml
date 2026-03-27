@@ -1,0 +1,58 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'classquest/frontend/**'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'classquest/frontend/**'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Get Flutter dependencies
+        working-directory: ./classquest/frontend
+        run: flutter pub get
+
+      - name: Build Android APK (Release)
+        working-directory: ./classquest/frontend
+        run: flutter build apk --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: classquest/frontend/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+      - name: Build Android App Bundle (Release)
+        working-directory: ./classquest/frontend
+        run: flutter build appbundle --release
+
+      - name: Upload App Bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-bundle
+          path: classquest/frontend/build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
