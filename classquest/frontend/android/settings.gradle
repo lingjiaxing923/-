@@ -1,19 +1,30 @@
 pluginManagement {
     def flutterSdkPath = {
         def properties = new Properties()
-        file("local.properties").withInputStream { properties.load(it) }
-        def flutterSdkPath = properties.getProperty("flutter.sdk")
-        if (flutterSdkPath == null) {
-            flutterSdkPath = System.getenv("FLUTTER_HOME")
-            if (flutterSdkPath == null) {
-                flutterSdkPath = System.getenv("ANDROID_HOME") + "/flutter"
+        def localPropertiesFile = file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.withInputStream { properties.load(it) }
+            def flutterSdkPath = properties.getProperty("flutter.sdk")
+            if (flutterSdkPath != null && !flutterSdkPath.isEmpty()) {
+                return flutterSdkPath
+            }
+        }
+        // Fallback to environment variables
+        flutterSdkPath = System.getenv("FLUTTER_HOME")
+        if (flutterSdkPath == null || flutterSdkPath.isEmpty()) {
+            flutterSdkPath = System.getenv("ANDROID_HOME")
+            if (flutterSdkPath != null && !flutterSdkPath.isEmpty()) {
+                flutterSdkPath = flutterSdkPath + "/flutter"
             }
         }
         return flutterSdkPath
     }
     settings.ext.flutterSdkPath = flutterSdkPath()
 
-    includeBuild("${settings.ext.flutterSdkPath}/packages/flutter_tools/gradle")
+    // Only include Flutter Gradle plugin if path is valid
+    if (settings.ext.flutterSdkPath != null) {
+        includeBuild("${settings.ext.flutterSdkPath}/packages/flutter_tools/gradle")
+    }
 
     repositories {
         google()
@@ -28,7 +39,7 @@ pluginManagement {
 
 plugins {
     id "dev.flutter.flutter-plugin-loader" version "1.0.0"
-    id "com.android.application" version "8.1.1" apply false
+    id "com.android.application" version "8.3.0" apply false
 }
 
 include ":app"
