@@ -11,15 +11,21 @@ if (localPropertiesFile.exists()) {
     }
 }
 
-def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
-if (flutterVersionCode == null) {
-    flutterVersionCode = '1'
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode', '1')
+def flutterVersionName = localProperties.getProperty('flutter.versionName', '1.0')
+
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    flutterRoot = System.getenv('FLUTTER_ROOT')
+}
+if (flutterRoot == null) {
+    flutterRoot = System.getProperty('flutter.sdk')
+}
+if (flutterRoot == null) {
+    throw new GradleException("Flutter SDK not found. Define flutter.sdk in local.properties or FLUTTER_ROOT environment variable.")
 }
 
-def flutterVersionName = localProperties.getProperty('flutter.versionName')
-if (flutterVersionName == null) {
-    flutterVersionName = '1.0'
-}
+apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
     namespace "com.example.com_classquest_app"
@@ -52,13 +58,3 @@ android {
         }
     }
 }
-
-// Flutter integration
-def flutterRoot = localProperties.getProperty('flutter.sdk')
-if (flutterRoot == null) {
-    flutterRoot = System.getenv('FLUTTER_ROOT')
-}
-if (flutterRoot == null) {
-    throw new GradleException("Flutter SDK not found. Define flutter.sdk in local.properties or FLUTTER_ROOT environment variable.")
-}
-apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
