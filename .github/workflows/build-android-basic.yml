@@ -21,8 +21,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          path: 'classquest'
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -37,8 +35,8 @@ jobs:
           cache: false
 
       - name: Build APK
-        working-directory: ./classquest/frontend
         run: |
+          cd classquest/frontend
           if [ "${{ github.event.inputs.build_type }}" == "debug" ]; then
             flutter build apk --debug
           else
