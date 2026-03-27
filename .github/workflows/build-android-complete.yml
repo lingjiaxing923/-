@@ -50,6 +50,14 @@ jobs:
       - name: 🔧 Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: 🔧 Create local.properties
+        working-directory: ./classquest/frontend/android
+        run: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+          echo "flutter.buildMode=release" >> local.properties
+          echo "flutter.versionName=1.0.0" >> local.properties
+          echo "flutter.versionCode=1" >> local.properties
+
       - name: 📦 Install Flutter dependencies
         working-directory: ./classquest/frontend
         run: |
@@ -142,6 +150,14 @@ jobs:
         with:
           channel: 'stable'
           cache: true
+
+      - name: 🔧 Create local.properties
+        working-directory: ./classquest/frontend/android
+        run: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+          echo "flutter.buildMode=debug" >> local.properties
+          echo "flutter.versionName=1.0.0" >> local.properties
+          echo "flutter.versionCode=1" >> local.properties
 
       - name: 📦 Install dependencies
         working-directory: ./classquest/frontend
