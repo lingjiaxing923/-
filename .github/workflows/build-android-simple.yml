@@ -1,0 +1,74 @@
+name: Build Android APK (Simplified)
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
+  push:
+    branches: [ main ]
+    paths:
+      - 'classquest/frontend/**'
+      - '.github/workflows/build-android-simple.yml'
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: false
+
+      - name: Setup Android SDK
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y android-sdk build-essential
+
+      - name: Create local.properties
+        working-directory: ./classquest/frontend/android
+        run: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+          echo "flutter.buildMode=${{ github.event.inputs.build_type }}" >> local.properties
+          echo "flutter.versionName=1.0.0" >> local.properties
+          echo "flutter.versionCode=1" >> local.properties
+
+      - name: Get Flutter dependencies
+        working-directory: ./classquest/frontend
+        run: flutter pub get
+
+      - name: Build APK
+        working-directory: ./classquest/frontend
+        run: |
+          if [ "${{ github.event.inputs.build_type }}" == "debug" ]; then
+            flutter build apk --debug
+          else
+            flutter build apk --release
+          fi
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk-${{ github.event.inputs.build_type }}
+          path: classquest/frontend/build/app/outputs/flutter-apk/*.apk
+          retention-days: 30
+          if-no-files-found: error
