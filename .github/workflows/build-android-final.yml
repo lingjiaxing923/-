@@ -1,0 +1,75 @@
+name: Build Android APK (Final Fixed)
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.19.0'
+          cache: false
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: '34'
+          build-tools: '34.0.0'
+          cmake: '3.22.1'
+          ndk: '25.2.95196533'
+
+      - name: Create local.properties
+        working-directory: ./classquest/frontend/android
+        run: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+          echo "flutter.buildMode=${{ github.event.inputs.build_type }}" >> local.properties
+          echo "flutter.versionName=1.0.0" >> local.properties
+          echo "flutter.versionCode=1" >> local.properties
+
+      - name: Get Flutter dependencies
+        working-directory: ./classquest/frontend
+        run: flutter pub get
+
+      - name: Build APK
+        working-directory: ./classquest/frontend
+        run: |
+          if [ "${{ github.event.inputs.build_type }}" == "debug" ]; then
+            flutter build apk --debug
+          else
+            flutter build apk --release
+          fi
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk-${{ github.event.inputs.build_type }}
+          path: classquest/frontend/build/app/outputs/flutter-apk/*.apk
+          retention-days: 30
+          if-no-files-found: error
