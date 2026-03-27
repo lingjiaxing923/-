@@ -46,7 +46,7 @@ class _GrowthRecordPageState extends State<GrowthRecordPage> {
                                 getTitlesWidget: (value, meta) {
                                   if (value.toInt() % 2 == 0) {
                                     return Text('${value.toInt() * 200}分',
-                                      style: const TextStyle(color: Colors.white70, fontSize: 10));
+                                        style: const TextStyle(color: Colors.white70, fontSize: 10));
                                   }
                                   return const Text('');
                                 },
@@ -65,7 +65,6 @@ class _GrowthRecordPageState extends State<GrowthRecordPage> {
                               ),
                             ),
                             topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                           ),
                           borderData: FlBorderData(
                             show: true,
@@ -74,21 +73,17 @@ class _GrowthRecordPageState extends State<GrowthRecordPage> {
                           lineBarsData: [
                             LineChartBarData(
                               spots: const [
-                                FlSpot(0, 200),
-                                FlSpot(1, 350),
-                                FlSpot(2, 480),
-                                FlSpot(3, 620),
-                                FlSpot(4, 780),
-                                FlSpot(5, 1234),
+                                FlSpot(0, 100),
+                                FlSpot(1, 280),
+                                FlSpot(2, 350),
+                                FlSpot(3, 320),
+                                FlSpot(4, 380),
+                                FlSpot(5, 450),
                               ],
                               isCurved: true,
                               color: Theme.of(context).primaryColor,
                               barWidth: 3,
                               dotData: FlDotData(show: true),
-                              belowBarData: BarAreaData(
-                                show: true,
-                                color: Theme.of(context).primaryColor.withOpacity(0.2),
-                              ),
                             ),
                           ],
                         ),
@@ -99,7 +94,7 @@ class _GrowthRecordPageState extends State<GrowthRecordPage> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // 积分时间轴
             Card(
               color: const Color(0xFF1e1e2e),
@@ -113,9 +108,9 @@ class _GrowthRecordPageState extends State<GrowthRecordPage> {
                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                     const SizedBox(height: 16),
-                    _buildTimelineItem(Icons.add_circle, '主动回答', '+2', '今天 10:30', '3月26日', Colors.green),
+                    _buildTimelineItem(Icons.add_circle, '主动回答', '+2', '今天 10:30', Colors.green),
                     const Divider(color: Colors.white12),
-                    _buildTimelineItem(Icons.check_circle, '优秀作业', '+3', '3月25日', '3月25日', Colors.blue),
+                    _buildTimelineItem(Icons.check_circle, '优秀作业', '+3', '3月26日', '3月26日', Colors.blue),
                     const Divider(color: Colors.white12),
                     _buildTimelineItem(Icons.group_work, '小组协作', '+2', '3月24日', '3月24日', Colors.orange),
                     const Divider(color: Colors.white12),
@@ -134,7 +129,7 @@ class _GrowthRecordPageState extends State<GrowthRecordPage> {
     );
   }
 
-  Widget _buildTimelineItem(IconData icon, String action, String points, String time, String date, Color color) {
+  Widget _buildTimelineItem(IconData icon, String action, String points, String time, Color color) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
@@ -157,14 +152,14 @@ class _GrowthRecordPageState extends State<GrowthRecordPage> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Text(points, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 20)),
-                    Text(' · $date', style: const TextStyle(color: Colors.white54, fontSize: 14)),
+                    Text(points, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
+                    Text(' · $time', style: const TextStyle(color: Colors.white54, fontSize: 14)),
                   ],
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
