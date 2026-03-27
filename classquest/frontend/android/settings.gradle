@@ -10,7 +10,8 @@ pluginManagement {
         throw new GradleException("Flutter SDK not found. Define flutter.sdk in local.properties or FLUTTER_ROOT environment variable.")
     }
 
-    includeBuild(new File(flutterSdkPath, '.gradle', 'plugins', 'dev.flutter.flutter-gradle-plugin'))
+    def flutterPluginPath = "${flutterSdkPath}/.gradle/plugins/dev.flutter.flutter-gradle-plugin"
+    includeBuild(new File(flutterPluginPath))
 }
 
 plugins {
