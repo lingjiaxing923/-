@@ -1,7 +1,6 @@
 plugins {
     id "com.android.application"
     id "kotlin-android"
-    id "dev.flutter.flutter-gradle-plugin"
 }
 
 def localProperties = new Properties()
@@ -25,7 +24,6 @@ if (flutterVersionName == null) {
 android {
     namespace "com.example.com_classquest_app"
     compileSdkVersion 34
-    ndkVersion flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -55,6 +53,12 @@ android {
     }
 }
 
-flutter {
-    source '../..'
+// Flutter integration
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    flutterRoot = System.getenv('FLUTTER_ROOT')
 }
+if (flutterRoot == null) {
+    throw new GradleException("Flutter SDK not found. Define flutter.sdk in local.properties or FLUTTER_ROOT environment variable.")
+}
+apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"

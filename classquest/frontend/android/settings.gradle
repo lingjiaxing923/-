@@ -4,18 +4,6 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
-
-    def flutterSdkPath = System.getenv('FLUTTER_ROOT') ?: System.getProperty('flutter.sdk')
-    if (flutterSdkPath == null) {
-        throw new GradleException("Flutter SDK not found. Define flutter.sdk in local.properties or FLUTTER_ROOT environment variable.")
-    }
-
-    def flutterPluginPath = "${flutterSdkPath}/.gradle/plugins/dev.flutter.flutter-gradle-plugin"
-    includeBuild(new File(flutterPluginPath))
-}
-
-plugins {
-    id "dev.flutter.flutter-gradle-plugin" apply false
 }
 
 include ":app"
