@@ -1,7 +1,6 @@
 plugins {
     id "com.android.application"
     id "org.jetbrains.kotlin.android"
-    id "dev.flutter.flutter-gradle-plugin"
 }
 
 def localProperties = new Properties()
@@ -25,7 +24,6 @@ if (flutterVersionName == null) {
 android {
     namespace "com.example.test"
     compileSdk 34
-    ndkVersion flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -55,6 +53,15 @@ android {
     }
 }
 
-flutter {
-    source '../..'
+repositories {
+    google()
+    mavenCentral()
+    maven { url 'https://storage.googleapis.com/flutter_infra_release/flutter' }
+}
+
+dependencies {
+    // 添加 Flutter 引擎依赖
+    implementation 'io.flutter:flutter_embedding:1.0.0'
+    implementation 'androidx.arch.core:core-runtime:2.2.0'
+    implementation 'androidx.arch.core:core-common:2.2.0'
 }
