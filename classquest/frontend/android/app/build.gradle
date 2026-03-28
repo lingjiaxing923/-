@@ -1,11 +1,26 @@
-plugins {
-    id "com.android.application"
-    id "org.jetbrains.kotlin.android"
+buildscript {
+    ext.kotlin_version = '1.7.10'
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
 }
 
 android {
     namespace "com.example.com_classquest_app"
-    compileSdk 34
+    compileSdkVersion 34
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -22,8 +37,8 @@ android {
 
     defaultConfig {
         applicationId "com.example.com_classquest_app"
-        minSdk 21
-        targetSdk 34
+        minSdkVersion 21
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0.0"
     }
