@@ -34,6 +34,12 @@ jobs:
           channel: 'stable'
           cache: false
 
+      - name: Generate fresh Android project structure
+        run: |
+          cd classquest/frontend
+          flutter create --org com.example --project-name temp_flutter_project .
+          flutter pub get
+
       - name: Build APK
         run: |
           cd classquest/frontend
