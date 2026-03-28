@@ -34,6 +34,13 @@ jobs:
           channel: 'stable'
           cache: false
 
+      - name: Create local.properties
+        working-directory: ./classquest/frontend/android
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          echo "flutter.versionName=1.0.0" >> local.properties
+          echo "flutter.versionCode=1" >> local.properties
+
       - name: Install dependencies
         run: |
           cd classquest/frontend
