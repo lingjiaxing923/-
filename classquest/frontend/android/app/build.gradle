@@ -49,5 +49,3 @@ android {
         }
     }
 }
-
-apply from: new File(rootProject.projectDir, '../../.flutter-plugins-dependencies').absolutePath
