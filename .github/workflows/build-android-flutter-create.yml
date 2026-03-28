@@ -69,6 +69,26 @@ jobs:
           flutter create --org com.example --project-name test --android-language kotlin .
           echo "Android project regenerated successfully"
 
+      - name: Restore Business Code
+        run: |
+          cd classquest/frontend
+          echo "Restoring business code from backup..."
+          if [ -f "lib_backup.tar.gz" ]; then
+            tar -xzf lib_backup.tar.gz
+            echo "Business code restored successfully"
+          else
+            echo "Warning: No backup found, lib directory may be overwritten"
+          fi
+
+      - name: Restore Dependencies
+        run: |
+          cd classquest/frontend
+          echo "Restoring pubspec.yaml dependencies..."
+          if [ -f "pubspec_backup.yaml" ]; then
+            echo "Restoring from backup pubspec.yaml"
+            cp pubspec_backup.yaml pubspec.yaml
+          fi
+
       - name: Restore Custom Configuration
         run: |
           cd classquest/frontend/android
