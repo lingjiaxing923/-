@@ -5,10 +5,14 @@ pluginManagement {
         gradlePluginPortal()
     }
 
-    // 获取 Flutter SDK 路径，如果找不到则不使用 includeBuild
     def flutterSdkPath = System.getenv('FLUTTER_ROOT') ?: System.getProperty('flutter.sdk')
     if (flutterSdkPath != null && new File(flutterSdkPath).exists()) {
         includeBuild("${flutterSdkPath}/packages/flutter_tools/gradle")
+    } else {
+        // 如果找不到 Flutter SDK，尝试从标准仓库获取插件版本信息
+        repositories {
+            maven { url 'https://storage.googleapis.com/flutter_infra_release/flutter' }
+        }
     }
 }
 
