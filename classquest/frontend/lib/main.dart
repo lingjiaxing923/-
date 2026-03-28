@@ -10,14 +10,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ClassQuest Test',
+      title: 'Flutter Test',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         useMaterial3: true,
       ),
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('ClassQuest Test'),
+          title: const Text('Flutter Test'),
         ),
         body: const Center(
           child: Text(
