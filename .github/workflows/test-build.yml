@@ -1,0 +1,64 @@
+name: Test Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: 'Test mode'
+        required: true
+        default: 'engineering'
+        type: choice
+        options:
+          - engineering
+          - flutter_create
+
+jobs:
+  build:
+    name: Test Android Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: false
+
+      - name: Flutter Version Check
+        run: |
+          flutter --version
+          flutter doctor -v
+
+      - name: Test Engineering Workaround
+        if: ${{ github.event.inputs.test_mode == 'engineering' }}
+        run: |
+          cd classquest/frontend
+          flutter pub get
+          flutter build apk --debug
+
+      - name: Test Flutter Create Regeneration
+        if: ${{ github.event.inputs.test_mode == 'flutter_create' }}
+        run: |
+          cd classquest/frontend
+          rm -rf android
+          flutter create --org com.example --project-name test --android-language kotlin .
+          flutter pub get
+          flutter build apk --debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-apk
+          path: classquest/frontend/build/app/outputs/flutter-apk/*.apk
+          retention-days: 3
+          if-no-files-found: ignore
