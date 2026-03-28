@@ -50,8 +50,21 @@ jobs:
         if: ${{ github.event.inputs.test_mode == 'flutter_create' }}
         run: |
           cd classquest/frontend
+          # Backup business code
+          if [ -d "lib" ]; then
+            tar -czf lib_backup.tar.gz lib/
+          fi
+          # Backup dependencies
+          cp pubspec.yaml pubspec_backup.yaml
+          # Regenerate Android
           rm -rf android
           flutter create --org com.example --project-name test --android-language kotlin .
+          # Restore business code
+          if [ -f "lib_backup.tar.gz" ]; then
+            tar -xzf lib_backup.tar.gz
+          fi
+          # Restore dependencies
+          cp pubspec_backup.yaml pubspec.yaml
           flutter pub get
           flutter build apk --debug
 
