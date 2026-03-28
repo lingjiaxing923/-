@@ -1,0 +1,109 @@
+name: Build Android APK (Flutter Create Regeneration)
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
+
+jobs:
+  build:
+    name: Build Android APK with Flutter Create
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: false
+
+      - name: Flutter Version Check
+        run: |
+          echo "Flutter Version:"
+          flutter --version
+          echo ""
+          echo "Flutter Doctor:"
+          flutter doctor -v
+
+      - name: Backup Important Files
+        run: |
+          cd classquest/frontend
+          # Backup lib directory
+          if [ -d "lib" ]; then
+            echo "Backing up lib directory..."
+            tar -czf lib_backup.tar.gz lib/
+          fi
+          # Backup pubspec.yaml dependencies
+          if [ -f "pubspec.yaml" ]; then
+            echo "Backing up pubspec.yaml..."
+            cp pubspec.yaml pubspec_backup.yaml
+          fi
+
+      - name: Remove Old Android Configuration
+        run: |
+          cd classquest/frontend
+          echo "Removing existing android directory..."
+          rm -rf android/
+
+      - name: Regenerate Android Project with Latest Flutter
+        run: |
+          cd classquest/frontend
+          echo "Regenerating Android project with Flutter..."
+          flutter create --org com.example --project-name test --android-language kotlin .
+          echo "Android project regenerated successfully"
+
+      - name: Restore Custom Configuration
+        run: |
+          cd classquest/frontend/android
+          echo "Restoring custom AndroidManifest.xml..."
+          # Ensure app name and configurations are correct
+          if [ -f "app/src/main/AndroidManifest.xml" ]; then
+            sed -i 's/android:label="test"/android:label="ClassQuest"/g' app/src/main/AndroidManifest.xml
+          fi
+
+      - name: Install Dependencies
+        run: |
+          cd classquest/frontend
+          flutter pub get
+
+      - name: Build APK
+        run: |
+          cd classquest/frontend
+          if [ "${{ github.event.inputs.build_type }}" == "debug" ]; then
+            flutter build apk --debug
+          else
+            flutter build apk --release
+          fi
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk-${{ github.event.inputs.build_type }}
+          path: classquest/frontend/build/app/outputs/flutter-apk/*.apk
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Build Summary
+        if: success()
+        run: |
+          echo "## 🚀 Build Success!" >> $GITHUB_STEP_SUMMARY
+          echo "- Flutter Version: $(flutter --version)" >> $GITHUB_STEP_SUMMARY
+          echo "- Build Type: ${{ github.event.inputs.build_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Project regenerated with flutter create" >> $GITHUB_STEP_SUMMARY
